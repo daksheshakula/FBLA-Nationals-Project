@@ -50,6 +50,13 @@ class AuthManager:
         except (OSError, ValueError):
             return {}
 
+    def _save_all_data(self):
+        try:
+            with open(self.filepath, "w", encoding="utf-8") as file:
+                json.dump(self.user_data, file, indent=2)
+        except OSError:
+            pass
+
     def register_user(self, username, password):
         if not username or not password:
             return False, "Enter a username and password to register."
@@ -171,8 +178,83 @@ questions = [
     },
     {
         "question": "What is the name of the lost clownfish that a father searches for across the ocean?",
-        "options": ["Nemo", "Dory", "Shrek", "The Lord of the Ringsfff"],
+        "options": ["Nemo", "Dory", "Shrek", "The Lord of the Rings"],
         "answer": "Nemo"
+    },
+    {
+        "question": "Which social media platform was founded by Mark Zuckerberg in 2004?",
+        "options": ["Twitter", "Facebook", "MySpace", "Friendster"],
+        "answer": "Facebook"
+    },
+    {
+        "question": "What popular video-sharing website was founded in 2005?",
+        "options": ["Vimeo", "YouTube", "Dailymotion", "Metacafe"],
+        "answer": "YouTube"
+    },
+    {
+        "question": "Which music player device was released by Apple in 2001?",
+        "options": ["iPad", "iPod", "Apple Watch", "AirPods"],
+        "answer": "iPod"
+    },
+    {
+        "question": "In what year did Barack Obama become the 44th President of the United States?",
+        "options": ["2006", "2007", "2008", "2009"],
+        "answer": "2008"
+    },
+    {
+        "question": "Which film won Best Picture at the 2010 Academy Awards?",
+        "options": ["Avatar", "The Hurt Locker", "Inception", "Toy Story 3"],
+        "answer": "The Hurt Locker"
+    },
+    {
+        "question": "What was the most popular social media platform before Facebook dominated the 2000s?",
+        "options": ["Friendster", "MySpace", "Bebo", "Orkut"],
+        "answer": "MySpace"
+    },
+    {
+        "question": "Which gaming console was released by Microsoft in 2005?",
+        "options": ["Xbox", "Xbox 360", "Wii", "PlayStation 2"],
+        "answer": "Xbox 360"
+    },
+    {
+        "question": "What reality TV show with Simon Cowell debuted in the US in 2002?",
+        "options": ["The Voice", "American Idol", "The X Factor", "Dancing with the Stars"],
+        "answer": "American Idol"
+    },
+    {
+        "question": "Which movie featuring avatar-like aliens was released in 2009?",
+        "options": ["Transformers", "Avatar", "Inception", "District 9"],
+        "answer": "Avatar"
+    },
+    {
+        "question": "What was the financial crisis of 2008 primarily caused by?",
+        "options": ["Dot-com bubble", "Housing market collapse", "Oil prices", "Tech stocks"],
+        "answer": "Housing market collapse"
+    },
+    {
+        "question": "Which pirate-themed movie franchise launched in 2003?",
+        "options": ["Pirates of the Caribbean", "Treasure Island", "The Black Pirate", "Captain Hook"],
+        "answer": "Pirates of the Caribbean"
+    },
+    {
+        "question": "What was the name of the popular blogging platform founded in 2003?",
+        "options": ["Wordpress", "Tumblr", "Blogger", "Medium"],
+        "answer": "Wordpress"
+    },
+    {
+        "question": "Which reality singing competition featured Jennifer Lopez, Simon Cowell, and Steve Tyler?",
+        "options": ["The Voice", "American Idol", "The X Factor", "Dancing with Stars"],
+        "answer": "American Idol"
+    },
+    {
+        "question": "What streaming technology did Netflix introduce in 2007?",
+        "options": ["Internet streaming", "Downloading", "Satellite", "Bluetooth"],
+        "answer": "Internet streaming"
+    },
+    {
+        "question": "Which girl group was a huge phenomenon in the early 2000s?",
+        "options": ["The Pussycat Dolls", "Destiny's Child", "Spice Girls", "TLC"],
+        "answer": "Destiny's Child"
     }
 ]
 
@@ -244,7 +326,7 @@ def build_quiz_questions():
             "options": random.sample(q["options"], len(q["options"])),
             "answer": q["answer"]
         }
-        for q in random.sample(questions, 3)
+        for q in random.sample(questions, 7)
     ]
 
 
@@ -311,6 +393,48 @@ def draw():
             msg_surface = small_font.render(auth_message, True, WHITE)
             screen.blit(msg_surface, (WIDTH // 2 - msg_surface.get_width() // 2, 440))
             
+    elif game_state == "home":
+        screen.fill(NAVY)
+        title = title_font.render("2000's Trivia Challenge", True, GOLD)
+        screen.blit(title, (WIDTH // 2 - title.get_width() // 2, 40))
+        
+        welcome_text = question_font.render(f"Welcome, {current_user}!", True, WHITE)
+        screen.blit(welcome_text, (WIDTH // 2 - welcome_text.get_width() // 2, 120))
+        
+        if current_user != "Guest" and current_user in auth.user_data:
+            high_score = auth.user_data[current_user].get("high_score", 0)
+            high_score_text = question_font.render(f"High Score: {high_score}/7", True, GOLD)
+            screen.blit(high_score_text, (WIDTH // 2 - high_score_text.get_width() // 2, 160))
+        
+        home_start_btn.draw(screen)
+        home_tutorial_btn.draw(screen)
+        home_logout_btn.draw(screen)
+        
+    elif game_state == "tutorial":
+        screen.fill(NAVY)
+        title = title_font.render("2000's Trivia Challenge - Tutorial", True, GOLD)
+        screen.blit(title, (WIDTH // 2 - title.get_width() // 2, 40))
+        
+        tutorial_text = [
+            "Welcome to the 2000's Trivia Challenge!",
+            "",
+            "1. You will be asked 7 questions from the 2000s era",
+            "2. Select one answer for each question",
+            "3. Click NEXT to submit your answer",
+            "4. Your score is saved to your profile",
+            "",
+            "Good luck!"
+        ]
+        
+        y_pos = 130
+        for line in tutorial_text:
+            text = question_font.render(line, True, WHITE)
+            screen.blit(text, (WIDTH // 2 - text.get_width() // 2, y_pos))
+            y_pos += 30
+        
+        tutorial_start_btn.draw(screen)
+        tutorial_back_btn.draw(screen)
+            
     elif game_state == "game":
         screen.fill(PURPLE)
 
@@ -328,7 +452,7 @@ def draw():
 
             next_button.draw(screen)
 
-            score_text = option_font.render(f"Score: {score}", True, BLACK)
+            score_text = option_font.render(f"Score: {score}/{len(current_questions)}", True, BLACK)
             screen.blit(score_text, (650, 20))
             
             user_text = small_font.render(f"Player: {current_user}", True, BLACK)
@@ -341,7 +465,8 @@ def draw():
                 screen.blit(shadow, (rect.x + 3, rect.y + 3))
                 screen.blit(text, rect)
         else:
-            final = question_font.render(f"Final Score: {score}/{len(current_questions)}", True, BLACK)
+            percentage = round((score / len(current_questions)) * 100)
+            final = question_font.render(f"Final Score: {score}/{len(current_questions)} = {percentage}%", True, BLACK)
             screen.blit(final, (250, 200))
 
             if score == len(current_questions):
@@ -391,12 +516,8 @@ while running:
                     password = password_box.text.strip()
                     success, auth_message = auth.register_user(username, password)
                     if success:
-                        current_user = username
-                        game_state = "home"
-                        print(f"DEBUG: registration successful for {username}; set game_state=home")
-                        pygame.event.clear()
-                        pygame.time.wait(80)
-                        continue
+                        password_box.text = ""
+                        print(f"DEBUG: registration successful for {username}; stay on login screen")
                         
                 elif guest_btn.is_clicked(pos):
                     current_user = "Guest"
