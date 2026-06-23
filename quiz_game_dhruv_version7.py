@@ -437,6 +437,7 @@ celebration_played = False
 login_intro_played = False
 background_music_playing = False
 yay_played = False
+music_muted = False
 
 
 class AuthManager:
@@ -821,8 +822,8 @@ class Button:
         if self.text.lower() == "skip bonus":
             text_color = BLACK
         
-        # Theme toggle button always has black text for visibility
-        if self.text in ["Dark Mode", "Light Mode"]:
+        # Theme and music toggle buttons always use black text for visibility.
+        if self.text in ["Dark Mode", "Light Mode", "Mute Music", "Unmute Music"]:
             text_color = BLACK
 
         # Render text centered on the button
@@ -846,6 +847,7 @@ def create_buttons():
 buttons = create_buttons()
 next_button = Button(620, 420, 150, 50, "NEXT")
 theme_toggle_btn = Button(WIDTH - 180, 20, 160, 40, "Dark Mode")
+music_toggle_btn = Button(20, 20, 160, 40, "Mute Music")
 main_menu_button = Button(220, 320, 170, 45, "Back to Login", BLUE)
 game_over_facts_btn = Button(410, 320, 170, 45, "View Facts", GREEN)
 final_summary_menu_btn = Button(315, 430, 170, 45, "Back to Login", BLUE)
@@ -1147,14 +1149,19 @@ def draw():
     global login_intro_played, background_music_playing, final_summary_confetti
     theme = THEMES[theme_mode]
 
+    music_toggle_btn.text = "Unmute Music" if music_muted else "Mute Music"
+
     if game_state == "login":
         # Play the gentle intro chime once, the first time this screen
         # is shown, and start the looping background music.
-        if not login_intro_played:
+        if not login_intro_played and not music_muted:
             play_sound(login_intro_sound)
             login_intro_played = True
 
-        if not background_music_playing:
+        if music_muted and background_music_playing:
+            background_music.stop()
+            background_music_playing = False
+        elif not music_muted and not background_music_playing:
             background_music.play(-1)  # Loop infinitely
             background_music_playing = True
 
@@ -1184,6 +1191,7 @@ def draw():
         register_btn.draw(screen, False, theme)
         guest_btn.draw(screen, False, theme)
         theme_toggle_btn.draw(screen, False, theme)
+        music_toggle_btn.draw(screen, False, theme)
 
         if auth_message:
             msg_surface = small_font.render(auth_message, True, theme["text"])
@@ -1192,7 +1200,10 @@ def draw():
     elif game_state == "home":
         # Home screen: shown after a successful login or guest start.
         # Keep background music playing
-        if not background_music_playing:
+        if music_muted and background_music_playing:
+            background_music.stop()
+            background_music_playing = False
+        elif not music_muted and not background_music_playing:
             background_music.play(-1)  # Loop infinitely
             background_music_playing = True
 
@@ -1214,6 +1225,7 @@ def draw():
         home_tutorial_btn.draw(screen, False, theme)
         home_logout_btn.draw(screen, False, theme)
         theme_toggle_btn.draw(screen, False, theme)
+        music_toggle_btn.draw(screen, False, theme)
 
         # Load and display the trivia3.png image at the bottom with rounded corners
         trivia3_image = load_image("trivia3.png", max_size=(650, 120))
@@ -1553,6 +1565,10 @@ while running:
                     theme_toggle_btn.text = "Dark Mode" if theme_mode == "light" else "Light Mode"
                     continue
 
+                if music_toggle_btn.is_clicked(pos):
+                    music_muted = not music_muted
+                    continue
+
                 if login_btn.is_clicked(pos):
                     username = username_box.text.strip()
                     password = password_box.text.strip()
@@ -1597,6 +1613,9 @@ while running:
                 if theme_toggle_btn.is_clicked(pos):
                     theme_mode = "light" if theme_mode == "dark" else "dark"
                     theme_toggle_btn.text = "Dark Mode" if theme_mode == "light" else "Light Mode"
+                    continue
+                if music_toggle_btn.is_clicked(pos):
+                    music_muted = not music_muted
                     continue
                 if home_start_btn.is_clicked(pos):
                     go_to_category_select()
