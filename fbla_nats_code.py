@@ -466,12 +466,14 @@ class AuthManager:
                 json.dump(self.user_data, file, indent=2)
         except OSError:
             pass
-
+     # Function to register a new user by checking if the username is valid and not already taken, then saving the new account to the JSON file.       
     def register_user(self, username, password):
         """Create a new account if the username/password are valid and
         the username isn't already taken. Returns (success, message)."""
         if not username or not password:
             return False, "Enter a username and password to register."
+        if len(username) < 7:
+            return False, "Username must be at least 7 characters long."
         if username in self.user_data:
             return False, "Username already exists. Choose another name."
 
@@ -482,6 +484,7 @@ class AuthManager:
         self._save_all_data()
         return True, "Account created! You may sign in now."
 
+    # Function to authenticate a user by checking the provided username and password against stored accounts.
     def authenticate(self, username, password):
         """Check a username/password pair against stored accounts.
         Returns (success, message)."""
